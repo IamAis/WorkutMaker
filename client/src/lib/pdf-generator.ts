@@ -45,13 +45,8 @@ export class PDFGenerator {
       yPosition = this.addDietaryAdvice(workout.dietaryAdvice, yPosition, lineColor);
     }
 
-    // Footer with coach contact info
+    // Footer with coach contact info (includes optional small watermark)
     this.addFooter(coachProfile);
-
-    // Add watermark if enabled
-    if (coachProfile?.showWatermark !== false) {
-      this.addWatermark();
-    }
 
     return this.doc.output('blob');
   }
@@ -346,46 +341,20 @@ export class PDFGenerator {
       }
     }
     
-    // Generation info
+    // Generation info (piccola filigrana rimovibile)
+    if (coachProfile?.showWatermark !== false) {
+      this.doc.setFont('helvetica', 'italic');
+      this.doc.setFontSize(8);
+      this.doc.setTextColor(150, 150, 150);
+      this.doc.text('Generato con FitTracker Pro', this.margin, footerY + 10);
+    }
     this.doc.setFont('helvetica', 'italic');
     this.doc.setFontSize(8);
     this.doc.setTextColor(150, 150, 150);
-    this.doc.text('Generato con FitTracker Pro', this.margin, footerY + 10);
     this.doc.text(new Date().toLocaleDateString('it-IT'), this.pageWidth - this.margin, footerY + 10, { align: 'right' });
   }
 
-  private addWatermark(): void {
-    const totalPages = this.doc.getNumberOfPages();
-    
-    for (let i = 1; i <= totalPages; i++) {
-      this.doc.setPage(i);
-      
-      // Save current settings
-      const currentFont = this.doc.getFont();
-      const currentFontSize = this.doc.getFontSize();
-      
-      // Set watermark properties
-      this.doc.setFont('helvetica', 'bold');
-      this.doc.setFontSize(50);
-      this.doc.setTextColor(240, 240, 240, 0.3); // Very light gray with transparency
-      
-      // Add watermark text
-      const watermarkText = 'FITTRACKER PRO';
-      const textWidth = this.doc.getTextWidth(watermarkText);
-      
-      // Position watermark diagonally in the center
-      const x = (this.pageWidth - textWidth) / 2;
-      const y = this.pageHeight / 2;
-      
-      // Rotate and add text
-      this.doc.text(watermarkText, x, y, { angle: 45 });
-      
-      // Restore previous settings
-      this.doc.setFont(currentFont.fontName, currentFont.fontStyle);
-      this.doc.setFontSize(currentFontSize);
-      this.doc.setTextColor(0, 0, 0);
-    }
-  }
+
 
   private hexToRgb(hex: string): { r: number; g: number; b: number } {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);

@@ -117,6 +117,14 @@ All data validation uses Zod schemas defined in `shared/schema.ts` with automati
 - Improved light mode visibility with better contrast and colors
 - Updated glass-effect styling for better readability in day mode
 
+**PDF Customization System** (August 6, 2025)
+- Fixed optional email fields validation (truly optional now)
+- Added customizable line color selector for PDF exports
+- Implemented removable "Generato con FitTracker Pro" watermark
+- Enhanced settings page with PDF personalization section
+- Updated coach profile schema with pdfLineColor and showWatermark fields
+- Removed large watermark, kept only small footer text controllable via settings
+
 ## User Preferences
 
 - Language: Italian (UI text in Italian)

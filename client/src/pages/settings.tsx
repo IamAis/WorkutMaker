@@ -420,10 +420,10 @@ export default function Settings() {
                             <div className="space-y-0.5">
                               <FormLabel className="flex items-center gap-2">
                                 {field.value ? <Eye size={14} className="text-blue-500" /> : <EyeOff size={14} className="text-gray-400" />}
-                                Filigrana PDF
+                                Scritta "Generato con FitTracker Pro"
                               </FormLabel>
                               <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Mostra/nascondi la filigrana nei PDF
+                                Mostra/nascondi la piccola scritta in basso nei PDF
                               </p>
                             </div>
                             <FormControl>

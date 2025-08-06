@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Save, Upload, Download, Trash2, User, Camera, Instagram, Facebook, Globe, FileText, Folder } from 'lucide-react';
+import { Save, Upload, Download, Trash2, User, Camera, Instagram, Facebook, Globe, FileText, Folder, Palette, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -39,7 +40,9 @@ export default function Settings() {
       instagram: coachProfile?.instagram || '',
       facebook: coachProfile?.facebook || '',
       website: coachProfile?.website || '',
-      exportPath: coachProfile?.exportPath || ''
+      exportPath: coachProfile?.exportPath || '',
+      pdfLineColor: coachProfile?.pdfLineColor || '#000000',
+      showWatermark: coachProfile?.showWatermark ?? true
     }
   });
 
@@ -55,7 +58,9 @@ export default function Settings() {
         instagram: coachProfile.instagram || '',
         facebook: coachProfile.facebook || '',
         website: coachProfile.website || '',
-        exportPath: coachProfile.exportPath || ''
+        exportPath: coachProfile.exportPath || '',
+        pdfLineColor: coachProfile.pdfLineColor || '#000000',
+        showWatermark: coachProfile.showWatermark ?? true
       });
     }
   });
@@ -366,6 +371,72 @@ export default function Settings() {
                       </FormItem>
                     )}
                   />
+                  
+                  {/* Personalizzazione PDF */}
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Palette size={18} className="text-emerald-500" />
+                      Personalizzazione PDF
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="pdfLineColor"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Palette size={14} className="text-emerald-500" />
+                              Colore Linee PDF
+                            </FormLabel>
+                            <FormControl>
+                              <div className="flex items-center gap-2">
+                                <Input 
+                                  type="color" 
+                                  {...field} 
+                                  className="w-16 h-10 p-1 rounded border cursor-pointer"
+                                />
+                                <Input 
+                                  type="text"
+                                  placeholder="#000000"
+                                  {...field}
+                                  className="flex-1"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Colore delle linee e dei bordi nei PDF esportati
+                            </p>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="showWatermark"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 space-y-0">
+                            <div className="space-y-0.5">
+                              <FormLabel className="flex items-center gap-2">
+                                {field.value ? <Eye size={14} className="text-blue-500" /> : <EyeOff size={14} className="text-gray-400" />}
+                                Filigrana PDF
+                              </FormLabel>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Mostra/nascondi la filigrana nei PDF
+                              </p>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
                 </div>
                 
                 <FormField

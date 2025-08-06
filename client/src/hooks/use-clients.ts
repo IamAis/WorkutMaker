@@ -74,6 +74,9 @@ export function useCreateCoachProfile() {
       instagram?: string;
       facebook?: string;
       website?: string;
+      exportPath?: string;
+      pdfLineColor?: string;
+      showWatermark?: boolean;
     }) => dbOps.createCoachProfile(profile),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach-profile'] });

@@ -49,7 +49,7 @@ export const workoutSchema = z.object({
 export const clientSchema = z.object({
   id: z.string(),
   name: z.string().min(1, "Nome cliente richiesto"),
-  email: z.string().email().optional(),
+  email: z.string().email().or(z.literal("")).optional(),
   phone: z.string().optional(),
   notes: z.string().optional(),
   createdAt: z.date()
@@ -59,14 +59,17 @@ export const clientSchema = z.object({
 export const coachProfileSchema = z.object({
   id: z.string(),
   name: z.string().min(1, "Nome coach richiesto"),
-  email: z.string().email().optional(),
+  email: z.string().email().or(z.literal("")).optional(),
   phone: z.string().optional(),
   bio: z.string().optional(),
   logo: z.string().optional(),
   instagram: z.string().optional(),
   facebook: z.string().optional(),
   website: z.string().optional(),
-  exportPath: z.string().optional() // Default export path for PDFs
+  exportPath: z.string().optional(), // Default export path for PDFs
+  // Impostazioni PDF personalizzabili
+  pdfLineColor: z.string().optional().default("#000000"), // Colore delle linee nei PDF
+  showWatermark: z.boolean().optional().default(true) // Se mostrare la filigrana
 });
 
 // Insert schemas
@@ -102,3 +105,13 @@ export const workoutTypes = [
 ] as const;
 
 export type WorkoutType = typeof workoutTypes[number];
+
+// PDF Settings schema per le impostazioni di esportazione
+export const pdfSettingsSchema = z.object({
+  lineColor: z.string().default("#000000"),
+  showWatermark: z.boolean().default(true),
+  headerStyle: z.enum(["minimal", "standard", "detailed"]).default("standard"),
+  fontSize: z.enum(["small", "medium", "large"]).default("medium")
+});
+
+export type PDFSettings = z.infer<typeof pdfSettingsSchema>;

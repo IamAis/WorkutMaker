@@ -18,30 +18,40 @@ export class PDFGenerator {
     this.doc = new jsPDF();
     let yPosition = this.margin;
 
+    // Set line color from coach profile
+    const lineColor = coachProfile?.pdfLineColor || '#000000';
+    this.doc.setDrawColor(lineColor);
+    this.doc.setTextColor('#000000'); // Keep text black for readability
+
     // Header with coach info and logo
-    yPosition = this.addHeader(workout, yPosition, coachProfile);
+    yPosition = this.addHeader(workout, yPosition, coachProfile, lineColor);
     yPosition += 10;
 
     // Workout info
-    yPosition = this.addWorkoutInfo(workout, yPosition);
+    yPosition = this.addWorkoutInfo(workout, yPosition, lineColor);
     yPosition += 10;
 
     // Description
     if (workout.description) {
-      yPosition = this.addDescription(workout.description, yPosition);
+      yPosition = this.addDescription(workout.description, yPosition, lineColor);
       yPosition += 10;
     }
 
     // Weekly progression
-    yPosition = this.addWeeklyProgression(workout, yPosition);
+    yPosition = this.addWeeklyProgression(workout, yPosition, lineColor);
 
     // Dietary advice
     if (workout.dietaryAdvice) {
-      yPosition = this.addDietaryAdvice(workout.dietaryAdvice, yPosition);
+      yPosition = this.addDietaryAdvice(workout.dietaryAdvice, yPosition, lineColor);
     }
 
     // Footer with coach contact info
     this.addFooter(coachProfile);
+
+    // Add watermark if enabled
+    if (coachProfile?.showWatermark !== false) {
+      this.addWatermark();
+    }
 
     return this.doc.output('blob');
   }
@@ -63,7 +73,7 @@ export class PDFGenerator {
     URL.revokeObjectURL(url);
   }
 
-  private addHeader(workout: Workout, yPosition: number, coachProfile?: CoachProfile | null): number {
+  private addHeader(workout: Workout, yPosition: number, coachProfile?: CoachProfile | null, lineColor?: string): number {
     // Add logo if present
     if (coachProfile?.logo) {
       try {
@@ -94,8 +104,13 @@ export class PDFGenerator {
       yPosition += 10;
     }
 
-    // Line separator
-    this.doc.setDrawColor(79, 70, 229);
+    // Line separator with custom color
+    if (lineColor) {
+      const rgb = this.hexToRgb(lineColor);
+      this.doc.setDrawColor(rgb.r, rgb.g, rgb.b);
+    } else {
+      this.doc.setDrawColor(79, 70, 229);
+    }
     this.doc.setLineWidth(1);
     this.doc.line(this.margin, yPosition, this.pageWidth - this.margin, yPosition);
     yPosition += 10;
@@ -103,7 +118,7 @@ export class PDFGenerator {
     return yPosition;
   }
 
-  private addWorkoutInfo(workout: Workout, yPosition: number): number {
+  private addWorkoutInfo(workout: Workout, yPosition: number, lineColor?: string): number {
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(12);
     this.doc.setTextColor(0, 0, 0);
@@ -132,7 +147,7 @@ export class PDFGenerator {
     return yPosition;
   }
 
-  private addDescription(description: string, yPosition: number): number {
+  private addDescription(description: string, yPosition: number, lineColor?: string): number {
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(14);
     this.doc.setTextColor(79, 70, 229);
@@ -150,7 +165,7 @@ export class PDFGenerator {
     return yPosition;
   }
 
-  private addWeeklyProgression(workout: Workout, yPosition: number): number {
+  private addWeeklyProgression(workout: Workout, yPosition: number, lineColor?: string): number {
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(14);
     this.doc.setTextColor(79, 70, 229);
@@ -215,8 +230,13 @@ export class PDFGenerator {
           this.doc.text('RECUPERO', this.margin + 150, yPosition);
           yPosition += 5;
 
-          // Line under headers
-          this.doc.setDrawColor(200, 200, 200);
+          // Line under headers with custom color
+          if (lineColor) {
+            const rgb = this.hexToRgb(lineColor);
+            this.doc.setDrawColor(rgb.r, rgb.g, rgb.b);
+          } else {
+            this.doc.setDrawColor(200, 200, 200);
+          }
           this.doc.setLineWidth(0.3);
           this.doc.line(this.margin + 10, yPosition, this.pageWidth - this.margin - 10, yPosition);
           yPosition += 3;
@@ -269,7 +289,7 @@ export class PDFGenerator {
     return yPosition;
   }
 
-  private addDietaryAdvice(advice: string, yPosition: number): number {
+  private addDietaryAdvice(advice: string, yPosition: number, lineColor?: string): number {
     if (yPosition > this.pageHeight - 60) {
       this.doc.addPage();
       yPosition = this.margin;
@@ -332,6 +352,48 @@ export class PDFGenerator {
     this.doc.setTextColor(150, 150, 150);
     this.doc.text('Generato con FitTracker Pro', this.margin, footerY + 10);
     this.doc.text(new Date().toLocaleDateString('it-IT'), this.pageWidth - this.margin, footerY + 10, { align: 'right' });
+  }
+
+  private addWatermark(): void {
+    const totalPages = this.doc.getNumberOfPages();
+    
+    for (let i = 1; i <= totalPages; i++) {
+      this.doc.setPage(i);
+      
+      // Save current settings
+      const currentFont = this.doc.getFont();
+      const currentFontSize = this.doc.getFontSize();
+      
+      // Set watermark properties
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setFontSize(50);
+      this.doc.setTextColor(240, 240, 240, 0.3); // Very light gray with transparency
+      
+      // Add watermark text
+      const watermarkText = 'FITTRACKER PRO';
+      const textWidth = this.doc.getTextWidth(watermarkText);
+      
+      // Position watermark diagonally in the center
+      const x = (this.pageWidth - textWidth) / 2;
+      const y = this.pageHeight / 2;
+      
+      // Rotate and add text
+      this.doc.text(watermarkText, x, y, { angle: 45 });
+      
+      // Restore previous settings
+      this.doc.setFont(currentFont.fontName, currentFont.fontStyle);
+      this.doc.setFontSize(currentFontSize);
+      this.doc.setTextColor(0, 0, 0);
+    }
+  }
+
+  private hexToRgb(hex: string): { r: number; g: number; b: number } {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
   }
 }
 

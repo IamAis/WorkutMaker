@@ -169,7 +169,8 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
     };
 
     try {
-      const blob = await pdfGenerator.generateWorkoutPDF(workout);
+      // Include coach profile per applicare le impostazioni nell'anteprima
+      const blob = await pdfGenerator.generateWorkoutPDF(workout, coachProfile);
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank');
     } catch (error) {

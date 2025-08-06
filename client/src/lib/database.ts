@@ -202,18 +202,34 @@ export const dbOps = {
   },
 
   async importData(data: { workouts?: Workout[], clients?: Client[], coachProfile?: CoachProfile }): Promise<void> {
-    await this.clearAllData();
+    console.log('💾 Importazione dati nel database:', data);
     
-    if (data.workouts) {
-      await db.workouts.bulkAdd(data.workouts);
-    }
-    
-    if (data.clients) {
-      await db.clients.bulkAdd(data.clients);
-    }
-    
-    if (data.coachProfile) {
-      await db.coachProfile.add(data.coachProfile);
+    try {
+      await this.clearAllData();
+      console.log('🗑️ Database pulito');
+      
+      if (data.workouts && data.workouts.length > 0) {
+        console.log('📝 Importo', data.workouts.length, 'workouts');
+        await db.workouts.bulkAdd(data.workouts);
+        console.log('✅ Workouts importati');
+      }
+      
+      if (data.clients && data.clients.length > 0) {
+        console.log('👥 Importo', data.clients.length, 'clienti');
+        await db.clients.bulkAdd(data.clients);
+        console.log('✅ Clienti importati');
+      }
+      
+      if (data.coachProfile) {
+        console.log('👨‍💼 Importo profilo coach:', data.coachProfile);
+        await db.coachProfile.add(data.coachProfile);
+        console.log('✅ Profilo coach importato');
+      }
+      
+      console.log('🎉 Importazione completata con successo!');
+    } catch (error) {
+      console.error('❌ Errore durante importazione database:', error);
+      throw error;
     }
   }
 };

@@ -74,13 +74,17 @@ export function WorkoutCard({ workout, onEdit, onDuplicate }: WorkoutCardProps) 
   return (
     <div className="p-4 bg-white/30 dark:bg-gray-800/30 rounded-xl hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer animate-fade-in">
       <div className="flex items-center justify-between mb-2">
-        <h4 className="font-medium text-gray-900 dark:text-white text-sm">
-          {workout.clientName}
+        <h4 className="font-medium text-gray-900 dark:text-white text-sm truncate pr-2">
+          {workout.name || `Scheda ${workout.clientName}`}
         </h4>
-        <span className="text-xs text-gray-500 dark:text-gray-400">
+        <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
           {timeAgo}
         </span>
       </div>
+      
+      <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+        Cliente: {workout.clientName}
+      </p>
       
       <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
         {workout.workoutType} • {workout.duration} settimane

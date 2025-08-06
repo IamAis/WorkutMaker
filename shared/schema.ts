@@ -32,8 +32,10 @@ export const weekSchema = z.object({
 // Workout schema
 export const workoutSchema = z.object({
   id: z.string(),
+  name: z.string().min(1, "Nome scheda richiesto"), // Nome identificativo della scheda
   coachName: z.string().min(1, "Nome coach richiesto"),
   clientName: z.string().min(1, "Nome cliente richiesto"),
+  clientId: z.string().optional(), // ID del cliente selezionato dalla lista
   workoutType: z.string().min(1, "Tipo scheda richiesto"),
   duration: z.number().min(1, "Durata richiesta"),
   description: z.string().optional(),

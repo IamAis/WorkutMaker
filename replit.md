@@ -110,6 +110,13 @@ All data validation uses Zod schemas defined in `shared/schema.ts` with automati
 - Confirmed server starts correctly on port 5000
 - All core functionality working as expected
 
+**Enhanced Workout Management** (August 6, 2025)
+- Added nome scheda (workout name) field for better identification
+- Implemented client selection from existing clients database
+- Enhanced workout cards to display workout names prominently  
+- Improved light mode visibility with better contrast and colors
+- Updated glass-effect styling for better readability in day mode
+
 ## User Preferences
 
 - Language: Italian (UI text in Italian)

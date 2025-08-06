@@ -7,15 +7,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ExerciseForm } from './exercise-form';
-import { Plus, Save, Eye, Download, Utensils } from 'lucide-react';
+import { Plus, Save, Eye, Download, Utensils, Users } from 'lucide-react';
 import { useCreateWorkout, useUpdateWorkout } from '@/hooks/use-workouts';
-import { useCoachProfile } from '@/hooks/use-clients';
+import { useCoachProfile, useClients } from '@/hooks/use-clients';
 import { useToast } from '@/hooks/use-toast';
 import { pdfGenerator } from '@/lib/pdf-generator';
 import { workoutTypes, insertWorkoutSchema, type InsertWorkout, type Week, type Exercise, type Day, type Workout } from '@shared/schema';
 import { z } from 'zod';
 
 const formSchema = insertWorkoutSchema.extend({
+  name: z.string().min(1, "Nome scheda richiesto"),
   coachName: z.string().min(1, "Nome coach richiesto"),
   clientName: z.string().min(1, "Nome cliente richiesto"),
   duration: z.number().min(1, "Durata richiesta")
@@ -28,7 +29,9 @@ interface WorkoutBuilderProps {
 
 export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderProps) {
   const [weeks, setWeeks] = useState<Week[]>(existingWorkout?.weeks || []);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(existingWorkout?.clientId || null);
   const { data: coachProfile } = useCoachProfile();
+  const { data: clients } = useClients();
   const createWorkout = useCreateWorkout();
   const updateWorkout = useUpdateWorkout();
   const { toast } = useToast();
@@ -36,8 +39,10 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: existingWorkout?.name || '',
       coachName: existingWorkout?.coachName || coachProfile?.name || '',
       clientName: existingWorkout?.clientName || '',
+      clientId: existingWorkout?.clientId || '',
       workoutType: existingWorkout?.workoutType || '',
       duration: existingWorkout?.duration || 8,
       description: existingWorkout?.description || '',
@@ -46,12 +51,31 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
     }
   });
 
+  // Gestore per la selezione del cliente
+  const handleClientSelect = (clientId: string) => {
+    if (clientId === 'new') {
+      setSelectedClientId(null);
+      form.setValue('clientName', '');
+      form.setValue('clientId', '');
+    } else {
+      const selectedClient = clients?.find(c => c.id === clientId);
+      if (selectedClient) {
+        setSelectedClientId(clientId);
+        form.setValue('clientName', selectedClient.name);
+        form.setValue('clientId', clientId);
+      }
+    }
+  };
+
   useEffect(() => {
     if (existingWorkout) {
       setWeeks(existingWorkout.weeks);
+      setSelectedClientId(existingWorkout.clientId || null);
       form.reset({
+        name: existingWorkout.name || '',
         coachName: existingWorkout.coachName,
         clientName: existingWorkout.clientName,
+        clientId: existingWorkout.clientId || '',
         workoutType: existingWorkout.workoutType,
         duration: existingWorkout.duration,
         description: existingWorkout.description || '',
@@ -205,6 +229,27 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Nome Scheda */}
+            <div className="mb-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold">Nome Scheda</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="es. Scheda Massa Avanzata - Gennaio 2025" 
+                        {...field}
+                        className="glass-effect bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm text-lg"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             {/* Coach and Client Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -230,14 +275,38 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
                 name="clientName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cliente</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Giulia Bianchi" 
-                        {...field}
-                        className="glass-effect bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
-                      />
-                    </FormControl>
+                    <FormLabel className="flex items-center gap-2">
+                      <Users size={16} />
+                      Cliente
+                    </FormLabel>
+                    <div className="space-y-3">
+                      {clients && clients.length > 0 && (
+                        <Select 
+                          value={selectedClientId || 'new'} 
+                          onValueChange={handleClientSelect}
+                        >
+                          <SelectTrigger className="glass-effect bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                            <SelectValue placeholder="Seleziona cliente esistente" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="new">Nuovo cliente</SelectItem>
+                            {clients.map((client) => (
+                              <SelectItem key={client.id} value={client.id}>
+                                {client.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <FormControl>
+                        <Input 
+                          placeholder="Nome del cliente" 
+                          {...field}
+                          className="glass-effect bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                          disabled={!!selectedClientId}
+                        />
+                      </FormControl>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
